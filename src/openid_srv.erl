@@ -12,7 +12,7 @@
 -include("openid.hrl").
 
 %% API
--export([start_link/1, test/0]).
+-export([start_link/0, start_link/1, test/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -35,17 +35,16 @@
 %%====================================================================
 %% API
 %%====================================================================
+start_link() ->
+    start_link({global, ?MODULE}).
+
 start_link(Name) ->
-    gen_server:start_link({local, Name}, ?MODULE, [], []).
+    gen_server:start_link(Name, ?MODULE, [], []).
 
 
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
-
--define(GV(E, P), proplists:get_value(E, P)).
--define(GVD(E, P, D), proplists:get_value(E, P, D)).
--define(DBG(Term), io:format("~p: ~p~n", [self(), Term])).
 
 init(_Args) ->
     AuthReqs = ets:new(openid_authreqs, [set, private]),

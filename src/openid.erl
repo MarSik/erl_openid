@@ -7,15 +7,61 @@
 %%%-------------------------------------------------------------------
 -module(openid).
 
--export([discover/1, associate/1, authentication_url/3, test/0]).
+-export([
+        start/2, stop/1, init/1, start_link/1,
+        prepare/2, prepare/3, verify/3,
+        discover/1, associate/1, authentication_url/3, test/0]).
+
+-behaviour(application).
+-behaviour(supervisor).
 
 -include("openid.hrl").
 
--define(GV(E, P), proplists:get_value(E, P)).
--define(GVD(E, P, D), proplists:get_value(E, P, D)).
--define(DBG(Term), io:format("~p: ~p~n", [self(), Term])).
+
+%% ------------------------------------------------------------
+%% Application
+%% ------------------------------------------------------------
+
+start(_, _) ->
+         start_link([]).
+
+stop(_) ->
+        ok.
 
 
+%% ------------------------------------------------------------
+%% Main supervisor
+%% ------------------------------------------------------------
+
+
+start_link(Args) ->
+                  supervisor:start_link({local, ?MODULE}, ?MODULE, Args).
+
+init(_Args) ->
+         {ok, {{one_for_one, 10, 10},
+             [
+                 {make_ref(),
+                     {openid_srv, start_link, []},
+                     permanent,
+                     10000,
+                     worker,
+                     [openid_srv]
+                 }
+             ]
+         }}.
+
+%%
+%% Intf to openid server
+%%
+
+prepare(UUID, Identifier) ->
+    gen_server:call({global, openid_srv}, {prepare, UUID, Identifier}).
+
+prepare(UUID, Identifier, Cache) ->
+    gen_server:call({global, openid_srv}, {prepare, UUID, Identifier, Cache}).
+
+verify(UUID, ReturnTo, Fields) ->
+    gen_server:call({global, openid_srv}, {verify, UUID, ReturnTo, Fields}).
 
 %% ------------------------------------------------------------
 %% Discovery

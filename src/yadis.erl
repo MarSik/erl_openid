@@ -12,8 +12,6 @@
 -include("openid.hrl").
 -include_lib("xmerl/include/xmerl.hrl").
 
--define(GVD(E, P, D), proplists:get_value(E, P, D)).
-
 -define(HTTP_HEADERS, [{"Accept", "application/xrds+xml"},
                        {"Connection", "close"},
                        {"User-Agent", "Erlang/openid"}]).
